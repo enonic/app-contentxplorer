@@ -1,0 +1,277 @@
+<html>
+<head>
+    <title>XPlorer</title>
+    <meta charset="UTF-8">
+    <script>
+        function toggleData(buttonId, dataSectionId, domHideFieldName) {
+            var section = document.getElementById(dataSectionId);
+
+            var isVisibleMakeInvisible = !section.classList.contains("hidden");
+
+            var domData = document.getElementById("domData");
+            var domHideFields = document.getElementsByName(domHideFieldName);
+            if (isVisibleMakeInvisible) {
+                if (domHideFields.length == 0)  {
+                    var newElement = document.createElement('input');
+                    newElement.setAttribute('name', domHideFieldName);
+                    newElement.setAttribute('value', "true");
+                    domData.appendChild(newElement);
+                } else {
+                    domHideFields[0].setAttribute('value', "true");
+                }
+
+            } else {
+                if (domHideFields.length > 0) {
+                    domData.removeChild(domHideFields[0]);
+                }
+            }
+
+            section.classList.toggle("hidden");
+        }
+
+        function displayContent(idOrUrl) {
+            var hideDataField = document.getElementsByName("hideData");
+            var hideTreeField = document.getElementsByName("hideTree");
+            var hideData = (hideDataField.length > 0) ? "&hideData" : "";
+            var hideTree = (hideTreeField.length > 0) ? "&hideTree" : "";
+            var branch = "&branch=" + document.getElementById("branch").value;
+            var showTree = "&showTree=" + document.getElementById("showTree").value;
+            var cutoffTree = "&cutoffTree=" + document.getElementById("cutoffTree").value;
+            window.location.href = "{{url}}?idOrUrl=" + idOrUrl + branch + showTree + cutoffTree + hideData + hideTree;
+        }
+    </script>
+
+    <style>
+        html {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: helvetica, arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        #heading {
+            background-color: dodgerblue;
+            color: white;
+            padding: 15px 30px;
+            display: block;
+            margin-bottom: 20px;
+        }
+        #main {
+            padding: 0;
+            display: block;
+        }
+        #subheadings {
+            padding: 0 30px 10px;
+        }
+        #mainForm {
+            padding: 20px 30px 10px;
+            border-top: 1px dotted #ccc;
+        }
+        .data-section {
+            padding: 20px 30px;
+            border-top: 1px dotted #ccc
+        }
+        .toggleButton {
+            margin-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .tree-item {
+            text-decoration: none;
+            display: inline-block;
+            margin: 0;
+            padding: 3px 0;
+            color: darkblue;
+            cursor: pointer;
+        }
+        .tree-item:hover {
+            text-decoration: underline;
+        }
+        .tree-item.duplicate-tree-item {
+            color: #8088bf;
+        }
+        .tree-item.duplicate-tree-item:hover {
+            color: darkblue;
+        }
+        .tree-item.highlight {
+            background-color: darkblue;
+            color: #fff;
+        }
+        .dupe-tag {
+            display: inline-block;
+            width: 1px;
+            opacity: .1;
+        }
+        #icon-licence {
+            font-size: 10px;
+            color:#888;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            margin: 0;
+            padding: 8px 20px;
+            background-color: rgba(255,255,255, .7);
+        }
+    </style>
+</head>
+<body>
+    <h1 id="heading">XPlorer</h1>
+
+    <main id="main">
+        <div id="subheadings">
+            {{#name}}<h2>{{name}}</h2>{{/name}}
+            {{#path}}<h4>{{path}}</h4>{{/path}}
+            {{#type}}{{{type}}}{{/type}}
+        </div>
+
+        <div id="mainForm">
+            <form name=theForm" method="get" action = "{{url}}">
+                <div>
+                    <label for="idOrUrl">Content ID or URL: </label>
+                    <input type="text" name="idOrUrl" id="idOrUrl" placeholder="Content URL" value="{{idOrUrl}}"/>
+                </div>
+
+                <br />
+
+                <div>
+                    <label for="branch">Branch: </label>
+                    <select name="branch" id="branch">{{{branchSelection}}}</select>
+                </div>
+
+                <br />
+
+                {{#tableHasRows}}
+                <div>
+                    <label for="itemForm">Items: </label>
+                    <table border="1px" id="itemForm">
+                        <th>Testing</th>
+                        </ht>
+                        <th>One</th>
+                        <th>Two</th>
+                        <th>Three</th>
+                        {{#tableRows}}
+                        <tr>
+                            <td><input type="checkbox" name="select" value="{{id}}"/></td>
+                            <td>{{one}}</td>
+                            <td>{{two}}</td>
+                            <td>{{three}}</td>
+                        </tr>
+                        {{/tableRows}}
+                    </table>
+                </div>
+
+                <br />
+                {{/tableHasRows}}
+
+                <div>
+                    <label for="showTree">Show subitem tree: </label>
+                    <select name="showTree" id="showTree">
+                        {{{treeSelection}}}
+                    </select>
+                </div>
+
+                <br />
+
+                <div>
+                    <label for="cutoffTree">Max subitem tree depth: </label>
+                    <input type="text" name="cutoffTree" id="cutoffTree" placeholder="Content URL" value="{{cutoffTree}}"/>
+                </div>
+
+                <br />
+
+                <div hidden id="domData">{{#hideData}}<input name="hideData" value="true">{{/hideData}}{{#hideTree}}<input name="hideTree" value="true">{{/hideTree}}</div>
+
+                <input type="submit" value="Show -->">
+
+            </form>
+        </div>
+
+
+        {{#result}}
+        <div class="data-section">
+            <h3>Content data</h3>
+            <button type="button" id="contentDataButton" class="toggleButton">Show/hide</button>
+            <div id="contentData" class="{{#hideData}}hidden{{/hideData}}">
+                <code><strong>{{{result}}}</strong></code>
+            </div>
+        </div>
+        {{/result}}
+
+
+        {{#tree}}
+        <div class="data-section" id="dependencies-tree">
+            <h3>Dependencies tree</h3>
+            <button type="button" id="treeDataButton" class="toggleButton">Show/hide</button>
+            <div id="treeData" class="{{#hideTree}}hidden{{/hideTree}}">
+                <code>{{{tree}}}</code>
+            </div>
+        </div>
+        <script>
+            document.getElementById("dependencies-tree").addEventListener('mouseover', function(e){
+                var elem = e.target;
+                var id = elem.getAttribute("data-id");
+
+                if (id) {
+                    var elemId = elem.id;
+                    if (elemId && elemId !== "dependencies-tree") {
+                        var duplicates = document.getElementsByClassName("duplicate-" + id);
+                        for (var j = 0; j<duplicates.length; j++) {
+                            var el = duplicates[j];
+                            el.classList.add("highlight");
+                        }
+                    } else {
+                        //console.log("Is duplicate");
+                        var original = document.getElementById("tree-item-" + id);
+                        original.classList.add("highlight");
+                    }
+                }
+            });
+            document.getElementById("dependencies-tree").addEventListener('mouseout', function(e){
+                var elem = e.target;
+                var id = elem.getAttribute("data-id");
+
+                if (id) {
+                    var elemId = elem.id;
+                    if (elemId && elemId !== "dependencies-tree") {
+                        var duplicates = document.getElementsByClassName("duplicate-" + id);
+                        for (var j = 0; j<duplicates.length; j++) {
+                            var el = duplicates[j];
+                            el.classList.remove("highlight");
+                        }
+                    } else {
+                        //console.log("Is duplicate");
+                        var original = document.getElementById("tree-item-" + id);
+                        original.classList.remove("highlight");
+                    }
+                }
+            });
+
+            /*var treeItems = document.getElementsByClassName("tree-item");
+            console.log(treeItems);
+            for (var i; i<treeItems.length; i++) {
+                var elem = treeItems[i];
+                elem.addEventListener("mouseover", function(event) {
+                    console.log("Over: " + event.target);
+                });
+                elem.addEventListener("mouseout", function(event) {
+                    console.log("Out: " + event.target);
+                });
+            }*/
+        </script>
+        {{/tree}}
+
+        {{#params}}<p>Params: {{params}}</p>{{/params}}
+
+
+        <p id="icon-licence">Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC BY 3.0</p>
+    </main>
+
+    <script>
+        document.getElementById("contentDataButton").addEventListener('click', function() { toggleData("contentDataButton", "contentData", "hideData")})
+        document.getElementById("treeDataButton").addEventListener('click', function() { toggleData("treeDataButton", "treeData", "hideTree")})
+    </script>
+</body>
+</html>
