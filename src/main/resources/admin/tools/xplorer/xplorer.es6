@@ -4,7 +4,6 @@ var cacheLib = require('/lib/cache');
 var contentLib = require('/lib/xp/content');
 var contextLib = require('/lib/xp/context');
 
-
 const HEX = "[0-9A-Za-z]";
 const ID_PATTERN = `${HEX}{8}-${HEX}{4}-${HEX}{4}-${HEX}{4}-${HEX}{12}`;
 const ID_RX = new RegExp(ID_PATTERN);
@@ -21,6 +20,8 @@ const treeCache = cacheLib.newCache({
 exports.get = function (req) {
 
     var view = resolve('xplorer.html');
+
+    //log.info("req (" + typeof req + "): " + JSON.stringify(req, null, 2));
 
     const idOrUrl = ((req.params.idOrUrl || "") + "").trim();
 
@@ -41,11 +42,12 @@ exports.get = function (req) {
             "Enter a content path or ID";
     const type = result ? `<p>${result.type.replace(/:(.*)/g, ":<strong>$1</strong>")}</p>` : undefined;
 
-    log.info("req.params (" + typeof req.params + "): " + JSON.stringify(req.params, null, 2));
+    log.info("\n\n\n###############################################\n" +
+        "REQUEST. req.params (" + typeof req.params + "): " + JSON.stringify(req.params, null, 2));
     let showTree = req.params.showTree || "none";
     const hideData = req.params.hideData != null && req.params.hideData !== false && req.params.hideData !== "false";
     const hideTree = req.params.hideTree != null && req.params.hideTree !== false && req.params.hideTree !== "false";
-    log.info("Hide-params: " + JSON.stringify({hideData, hideTree}, null, 2));
+    //log.info("Hide-params: " + JSON.stringify({hideData, hideTree}, null, 2));
 
     let cutoffTree;
     try {
@@ -63,19 +65,7 @@ exports.get = function (req) {
     let tree = undefined;
     let htmlResult = undefined;
     if (result) {
-        log.info("result._id (" + typeof result._id + "): " + JSON.stringify(result._id, null, 2));
-        const resultString = JSON.stringify(result);
-        const allIds = [];
-        const pattern = new RegExp(`"(${ID_PATTERN})"`, "g");
-        var match;
-        while (match = pattern.exec(resultString)) {
-            const theMatch = match[1];
-            if (theMatch !== result._id && allIds.indexOf(theMatch) === -1) {
-                allIds.push(theMatch);
-            }
-        }
-
-        //log.info("allIds (" + typeof allIds + "): " + JSON.stringify(allIds, null, 2));
+        //log.info("result._id (" + typeof result._id + "): " + JSON.stringify(result._id, null, 2));
 
         if (LEGAL_TREE_ATTRIBUTES.indexOf(showTree) !== -1) {
             const key = result._id + "_" + branch + "_" + cutoffTree;
@@ -89,26 +79,26 @@ exports.get = function (req) {
             showTree = "none";
         }
 
+
+        if (Object.keys(cacheNamesPathsAndTypesById).length === 0 ) {
+            buildSubItemTree(result, null, branch, [result._id], cacheNamesPathsAndTypesById, 1);
+        }
+
         const makeLink = (match, id) => {
             const node = cacheNamesPathsAndTypesById[id];
             const title = (node) ? `title="${getToolTip(id, node)}" ` : "";
 
             return `<a ` +
                 `class="tree-item" ` +
-                `${title}"` +
+                `${title}` +
                 `href="javascript:displayContent('${id}')">${id}</a>`;
         };
-
-        if (Object.keys(cacheNamesPathsAndTypesById).length === 0 ) {
-            buildSubItemTree(result, null, branch, [result._id], cacheNamesPathsAndTypesById, 1);
-        }
 
         htmlResult = JSON.stringify(result, null, 4)
                 .replace(/\n/g, "<br/>")
                 .replace(/ /g, "&nbsp;")
                 .replace(ID_IN_JSON_RX, makeLink);
     }
-
 
     var model = {
         name,
@@ -135,7 +125,7 @@ exports.get = function (req) {
     };
 
     //log.info("model (" + typeof model + "): " + JSON.stringify(model, null, 2));
-    log.info("----------------\n");
+    //log.info("----------------\n");
 
     return {
         contentType: 'text/html',
@@ -169,9 +159,6 @@ const getContentByUrlOrId = (urlOrId, branch) => {
 };
 
 function getNodeAndSubNodes(result, alreadyVisited, cacheNamesPathsAndTypesById) {
-    //log.info("result._id (" + typeof result._id + "): " + JSON.stringify(result._id, null, 2));
-    //log.info("displayName (" + typeof result.displayName + "): " + JSON.stringify(result.displayName, null, 2));
-    //log.info("type (" + typeof result.type + "): " + JSON.stringify(result.type, null, 2));
     const resultString = JSON.stringify(result);
     const subItems = [];
     const ignored = [];
@@ -213,14 +200,20 @@ function buildSubItemTree(result, id, branch, alreadyVisited, cacheNamesPathsAnd
         result = getContentByUrlOrId(id, branch);
     }
 
+    if (!result) {
+        return `-- ERROR: invalid node (ID=${JSON.stringify(id)}, branch=${JSON.stringify(branch)}, result=${JSON.stringify(result)})`;
+    }
+
     const nodeAndSubNodes = getNodeAndSubNodes(result, alreadyVisited, cacheNamesPathsAndTypesById);
+
+    /*
     if (
         (nodeAndSubNodes.subItems && nodeAndSubNodes.subItems.length > 0) ||
         ((nodeAndSubNodes.ignored || []).length > 0)
-    ) log.info("nodeAndSubNodes (" + typeof nodeAndSubNodes + "): " + JSON.stringify(nodeAndSubNodes, null, 2));
+    ) log.info("nodeAndSubNodes (" + typeof nodeAndSubNodes + "): " + JSON.stringify(nodeAndSubNodes, null, 2)); //*/
 
     alreadyVisited.push(...nodeAndSubNodes.subItems);
-    if (alreadyVisited && alreadyVisited.length > 0) log.info("alreadyVisited (" + typeof alreadyVisited + "): " + JSON.stringify(alreadyVisited, null, 2) + "\n\n---\n\n");
+    //if (alreadyVisited && alreadyVisited.length > 0) log.info("alreadyVisited (" + typeof alreadyVisited + "): " + JSON.stringify(alreadyVisited, null, 2) + "\n\n---\n\n");
 
     const subItems = {};
     nodeAndSubNodes.subItems.forEach( subId => {
