@@ -54,9 +54,21 @@
         #heading {
             background-color: dodgerblue;
             color: white;
-            padding: 15px 30px;
+            padding: 0 30px;
             display: block;
             margin-bottom: 20px;
+        }
+        #heading h1 {
+            display: inline-block;
+            margin: 10px 42px 10px;
+        }
+        #header-icon {
+            display: inline-block;
+            height: 80px;
+            width: 80px;
+            position: absolute;
+            top: -11px;
+            left: -7px;
         }
         #main {
             padding: 0;
@@ -118,7 +130,10 @@
     </style>
 </head>
 <body>
-    <h1 id="heading">XPlorer</h1>
+    <div id="heading">
+        <img src="{{iconWhite}}" id="header-icon">
+        <h1>Content XPlorer</h1>
+    </div>
 
     <main id="main">
         <div id="subheadings">
@@ -248,18 +263,6 @@
                     }
                 }
             });
-
-            /*var treeItems = document.getElementsByClassName("tree-item");
-            console.log(treeItems);
-            for (var i; i<treeItems.length; i++) {
-                var elem = treeItems[i];
-                elem.addEventListener("mouseover", function(event) {
-                    console.log("Over: " + event.target);
-                });
-                elem.addEventListener("mouseout", function(event) {
-                    console.log("Out: " + event.target);
-                });
-            }*/
         </script>
         {{/tree}}
 
