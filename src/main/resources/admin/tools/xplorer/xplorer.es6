@@ -4,11 +4,6 @@ var cacheLib = require('/lib/cache');
 var contentLib = require('/lib/xp/content');
 var contextLib = require('/lib/xp/context');
 
-/*var BATCH_SIZE = 300;
-
-var SOURCE_BRANCH = "master";
-var TARGET_BRANCH = "draft";
-*/
 
 const HEX = "[0-9A-Za-z]";
 const ID_PATTERN = `${HEX}{8}-${HEX}{4}-${HEX}{4}-${HEX}{4}-${HEX}{12}`;
@@ -24,17 +19,8 @@ const treeCache = cacheLib.newCache({
 });
 
 exports.get = function (req) {
-    /*
 
-    deleteMarked(req);
-
-    var diff = getDiff();
-
-    model.inSourceOnly = populateDiff(diff);
-    //*/
     var view = resolve('xplorer.html');
-
-    //log.info("req (" + typeof req + "): " + JSON.stringify(req, null, 2));
 
     const idOrUrl = ((req.params.idOrUrl || "") + "").trim();
 
@@ -124,31 +110,12 @@ exports.get = function (req) {
     }
 
 
-
-    //const tableRows = [];
-    /*
-        {
-            id: 42,
-            one: "one42",
-            two: "two42",
-            three: "three42"
-        },
-        {
-            id: 43,
-            one: "one43",
-            two: "two43",
-            three: "three43"
-        }
-    ];
-    //*/
-
-
-
     var model = {
         name,
         path,
         type,
-        //tableRows,
+        iconWhite: portal.assetUrl({path: 'xplorer_white.svg'}),
+        iconBlack: portal.assetUrl({path: 'xplorer_white.svg'}),
         hideData,
         hideTree,
         tableHasRows: false, // Array.isArray(tableRows) && tableRows.length > 0,
@@ -309,119 +276,3 @@ function buildTree(subItemTree, ignored, showTree, cacheNamesPathsAndTypesById) 
 
     return "<ul>\n" + nodes.join("") + "</ul>\n";
 }
-
-
-
-
-
-/*
-function deleteMarked(req) {
-    var toDelete = req.params.toDelete;
-    if (toDelete) {
-
-        if (toDelete.constructor === Array) {
-            toDelete.forEach(function (id) {
-                log.info("DELETING CONTENT WITH ID: " + id);
-
-                contentLib.delete({
-                    key: id,
-                    branch: SOURCE_BRANCH
-                })
-            });
-        } else {
-            contentLib.delete({
-                key: toDelete,
-                branch: SOURCE_BRANCH
-            })
-        }
-    }
-}
-
-var getDiff = function () {
-
-    var inSource = contextLib.run({
-        branch: SOURCE_BRANCH
-    }, getAllContent);
-
-    var inTarget = contextLib.run({
-        branch: TARGET_BRANCH
-    }, getAllContent);
-
-
-    return difference(inSource, inTarget);
-};
-
-
-function difference(a1, a2) {
-    var result = [];
-    for (var i = 0; i < a1.length; i++) {
-        if (a2.indexOf(a1[i]) === -1) {
-            result.push(a1[i]);
-        }
-    }
-    return result;
-}
-
-var getAllContent = function () {
-
-    var allIds = [];
-
-    var result = contentLib.query({
-        start: 0,
-        count: 0
-    });
-
-    var totalHits = result.total;
-    var currentStart = 0;
-    var numBatches = parseInt(Math.ceil(totalHits / BATCH_SIZE));
-
-    for (var i = 1; i <= numBatches; i++) {
-        var contentIds = getContentIds(currentStart, BATCH_SIZE);
-        allIds = allIds.concat(contentIds);
-        currentStart += BATCH_SIZE;
-    }
-
-    return allIds;
-};
-
-var getContentIds = function (start, count) {
-    var hits = [];
-
-    var result = contentLib.query({
-        start: start,
-        count: count
-    });
-
-
-    result.hits.forEach(function (hit) {
-        hits.push(hit._id);
-    });
-
-    return hits;
-};
-
-
-function populateDiff(diff) {
-
-    var inSourceOnly = [];
-
-    diff.forEach(function (id) {
-
-        var result = contentLib.get({
-            key: id,
-            branch: SOURCE_BRANCH
-        });
-
-        var entry = {
-            id: result._id,
-            name: result._name,
-            path: result._path,
-            displayName: result.displayName
-        };
-
-        inSourceOnly.push(entry);
-    });
-
-    return inSourceOnly;
-}
-//*/
