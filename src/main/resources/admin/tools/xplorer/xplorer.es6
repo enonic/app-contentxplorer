@@ -193,7 +193,7 @@ function getNodeAndSubNodes(result, alreadyVisited, cacheNamesPathsAndTypesById)
 
 function buildSubItemTree(result, id, branch, alreadyVisited, cacheNamesPathsAndTypesById, depth) {
     if (depth <= 0) {
-        return "-- TRUNCATED: max tree depth --";
+        return `-- TRUNCATED: max tree depth (ID=${JSON.stringify(id)})`;
     }
 
     if (!result) {
@@ -225,10 +225,10 @@ function buildSubItemTree(result, id, branch, alreadyVisited, cacheNamesPathsAnd
 }
 
 function getNodeText(id, node, showTree) {
-    return (showTree === "id") ?
-        id :
-        (typeof node === "string") ?
-            node :
+    return (typeof node === "string") ?
+        node :
+        (showTree === "id") ?
+            id :
             node[showTree];
 }
 function getToolTip(id, node) {
