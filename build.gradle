@@ -10,8 +10,8 @@ apply plugin: 'com.enonic.xp.app'
 app {
     name = project.appName
     displayName = 'XPlorer'
-    vendorName = 'Gjensidige '
-    vendorUrl = 'https://www.gjensidige.no'
+    vendorName = 'Enonic '
+    vendorUrl = 'https://www.enonic.com'
     systemVersion = "${xpVersion}"
 }
 
