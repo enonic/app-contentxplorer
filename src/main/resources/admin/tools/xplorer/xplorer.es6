@@ -42,6 +42,7 @@ exports.get = function (req) {
             "Enter a content path or ID";
     const type = result ? `<p>${result.type.replace(/:(.*)/g, ":<strong>$1</strong>")}</p>` : undefined;
 
+
     log.info("\n\n\n###############################################\n" +
         "REQUEST. req.params (" + typeof req.params + "): " + JSON.stringify(req.params, null, 2));
     let showTree = req.params.showTree || "none";
@@ -64,6 +65,7 @@ exports.get = function (req) {
 
     let tree = undefined;
     let htmlResult = undefined;
+    let siteLink = undefined;
     if (result) {
         //log.info("result._id (" + typeof result._id + "): " + JSON.stringify(result._id, null, 2));
 
@@ -98,6 +100,18 @@ exports.get = function (req) {
                 .replace(/\n/g, "<br/>")
                 .replace(/ /g, "&nbsp;")
                 .replace(ID_IN_JSON_RX, makeLink);
+
+        if (result.type !== "portal:site") {
+            // Assumes that the root path is the site
+            const sitePath = result._path.match(/^\/[^\/]+/)[0];
+            const siteData = getContentByUrlOrId(sitePath, branch);
+            if (siteData && siteData.type === "portal:site") {
+                siteLink = makeLink(null, siteData._id);
+            } else {
+
+                log.info('Couldnt find site in root data (siteData for sitePath=' + JSON.stringify(sitePath) + ', type: ' + typeof siteData + '): ' + JSON.stringify(siteData, null, 2));
+            }
+        }
     }
 
     var model = {
@@ -121,11 +135,12 @@ exports.get = function (req) {
         cutoffTree,
         tree,
         //params: JSON.stringify(req.params),
-        result: htmlResult
+        result: htmlResult,
+        siteLink
     };
 
     //log.info("model (" + typeof model + "): " + JSON.stringify(model, null, 2));
-    //log.info("----------------\n");
+    log.info("---------------- Ok.\n\n");
 
     return {
         contentType: 'text/html',
@@ -140,7 +155,6 @@ const getContentByUrlOrId = (urlOrId, branch) => {
     if (!ID_RX.test(urlOrId)) {
         // ID, not URL, presumably a path following the ID pattern will not occur (8
 
-
         if (!urlOrId.startsWith('/')) {
             urlOrId = `/${urlOrId}`;
         }
@@ -150,7 +164,7 @@ const getContentByUrlOrId = (urlOrId, branch) => {
         branch
     };
 
-    log.info("getContentByUrlOrId: " + urlOrId);
+    //log.info("getContentByUrlOrId: " + urlOrId);
 
     const result = contentLib.get(query);
     //log.info("result (" + typeof result + "): " + JSON.stringify(result, null, 2));
