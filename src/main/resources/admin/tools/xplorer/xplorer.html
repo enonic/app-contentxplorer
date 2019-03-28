@@ -222,47 +222,41 @@
             <button type="button" id="treeDataButton" class="toggleButton">Show/hide</button>
             <div id="treeData" class="{{#hideTree}}hidden{{/hideTree}}">
                 <code>{{{tree}}}</code>
+
+                {{#siteLink}}
+                <div style="padding: 30px 0">
+                    <p><strong>The root site config may add more dependencies to this!</strong></p>
+                    <p>Take a look: <code>{{{.}}}</code></p></div>
+                {{/siteLink}}
             </div>
+
         </div>
         <script>
-            document.getElementById("dependencies-tree").addEventListener('mouseover', function(e){
-                var elem = e.target;
-                var id = elem.getAttribute("data-id");
+            function addHighLight(elem){ elem.classList.add("highlight"); }
+            function removeHighLight(elem){ elem.classList.remove("highlight"); }
 
-                if (id) {
-                    var elemId = elem.id;
-                    if (elemId && elemId !== "dependencies-tree") {
-                        var duplicates = document.getElementsByClassName("duplicate-" + id);
-                        for (var j = 0; j<duplicates.length; j++) {
-                            var el = duplicates[j];
-                            el.classList.add("highlight");
-                        }
-                    } else {
-                        //console.log("Is duplicate");
-                        var original = document.getElementById("tree-item-" + id);
-                        original.classList.add("highlight");
-                    }
-                }
-            });
-            document.getElementById("dependencies-tree").addEventListener('mouseout', function(e){
-                var elem = e.target;
-                var id = elem.getAttribute("data-id");
+            function getHighlightListener(switchFunc) {
+                return function(e) {
+                    var elem = e.target;
+                    var id = elem.getAttribute("data-id");
 
-                if (id) {
-                    var elemId = elem.id;
-                    if (elemId && elemId !== "dependencies-tree") {
-                        var duplicates = document.getElementsByClassName("duplicate-" + id);
-                        for (var j = 0; j<duplicates.length; j++) {
-                            var el = duplicates[j];
-                            el.classList.remove("highlight");
+                    if (id) {
+                        var elemId = elem.id;
+                        if (elemId && elemId !== "dependencies-tree") {
+                            var duplicates = document.getElementsByClassName("duplicate-" + id);
+                            for (var j = 0; j<duplicates.length; j++) {
+                                switchFunc(duplicates[j]);
+                            }
+                        } else {
+                            //console.log("Is duplicate");
+                            switchFunc(document.getElementById("tree-item-" + id));
                         }
-                    } else {
-                        //console.log("Is duplicate");
-                        var original = document.getElementById("tree-item-" + id);
-                        original.classList.remove("highlight");
                     }
-                }
-            });
+                };
+            }
+
+            document.getElementById("dependencies-tree").addEventListener('mouseover', getHighlightListener(addHighLight));
+            document.getElementById("dependencies-tree").addEventListener('mouseout', getHighlightListener(removeHighLight));
         </script>
         {{/tree}}
 
