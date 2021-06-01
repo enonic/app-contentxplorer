@@ -6,7 +6,7 @@
     "dev": "babel src/main/resources --out-dir build/resources/main --ignore \"**/*.js\" --watch"
   },
   "devDependencies": {
-    "@babel/cli": "^7.1.2",
+    "@babel/cli": "^7.14.3",
     "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0"
